@@ -1,0 +1,2 @@
+rootProject.name = 'mini-orm-root'
+include(':orm-core')
