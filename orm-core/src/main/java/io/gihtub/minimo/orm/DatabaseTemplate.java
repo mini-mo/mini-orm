@@ -1,9 +1,6 @@
 package io.gihtub.minimo.orm;
 
-import io.gihtub.minimo.orm.dsl.AdvanceQueryDsl;
-import io.gihtub.minimo.orm.dsl.NativeQueryDsl;
-import io.gihtub.minimo.orm.dsl.QueryDsl;
-import io.gihtub.minimo.orm.dsl.TypeQueryDsl;
+import io.gihtub.minimo.orm.dsl.*;
 
 public class DatabaseTemplate {
   private final OrmContext context;
@@ -29,6 +26,18 @@ public class DatabaseTemplate {
 
   public <T> TypeQueryDsl<T> from(Class<T> cls) {
     return new TypeQueryDsl<>(context, cls);
+  }
+
+  public NativeUpdateDsl createNativeUpdate(String sql) {
+    return new NativeUpdateDsl(sql, context);
+  }
+
+  public NativeInsertDsl createNativeInsert(String sql) {
+    return new NativeInsertDsl(sql, context);
+  }
+
+  public NativeUpdateDsl nativeDelete(String sql) {
+    return new NativeUpdateDsl(sql, context);
   }
 
 //  public <T> T getMapper(Class<T> mapper) {

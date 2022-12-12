@@ -1,9 +1,9 @@
 package io.gihtub.minimo.orm;
 
-import io.gihtub.minimo.orm.dsl.MysqlDialectGenerator;
-import io.gihtub.minimo.orm.executor.JdbcTemplateExecutor;
-import io.gihtub.minimo.orm.dsl.criteria.Criteria;
 import com.zaxxer.hikari.HikariDataSource;
+import io.gihtub.minimo.orm.dsl.MysqlDialectGenerator;
+import io.gihtub.minimo.orm.dsl.criteria.Criteria;
+import io.gihtub.minimo.orm.executor.JdbcTemplateExecutor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,8 +36,10 @@ class DatabaseTemplateTest {
       sts.execute("create table users(id int primary key, name varchar(20), nick varchar(20), createdAt timestamp)");
       sts.execute("create table books(id int primary key auto_increment, name varchar(20), createdAt timestamp)");
       sts.execute("create table relations(id int primary key auto_increment, uid int not null, bid int not null)");
+
       sts.execute("insert into users values(1, 'test', 'vvv', '2022-12-02 11:11:11') ");
       sts.execute("insert into users values(2, 'test-2', 'vvv', '2022-12-02 11:11:11') ");
+
       sts.execute("insert into books values(1, 'test', '2022-12-02 11:11:11') ");
       sts.execute("insert into books values(2, 'test-2', '2022-12-02 11:11:11') ");
 
@@ -161,6 +163,50 @@ class DatabaseTemplateTest {
         .map((rs, i) -> new UserBookDTO(rs.getInt("id"), rs.getString("name")))
         .list(10);
     assertFalse(ld_2.isEmpty());
+  }
 
+  @Test
+  void test_query_2() {
+    // find by id
+    // find by ids
+    // exists
+    // count
+    // page
+  }
+
+  @Test
+  void test_update() {
+    var sql = "update users set name = ? where id = ? limit 1";
+    int wr = db.createNativeUpdate(sql)
+        .bind(1, "test")
+        .bind(2, 1)
+        .execute();
+    assertEquals(1, wr);
+  }
+
+  @Test
+  void test_insert() {
+    var sql = "insert into users(id, name) values (?, ?)";
+    var wr = db.createNativeInsert(sql)
+        .bind(1, 3)
+        .bind(2, "test-insert")
+        .execute();
+    assertEquals(1, wr);
+
+    var key = db.createNativeInsert("insert into relations(bid, uid) values ( ?, ?)")
+        .bind(1, 2)
+        .bind(2, 3)
+        .executeAndReturnGeneratedKey();
+
+    assertTrue(key > 3);
+  }
+
+  @Test
+  void test_delete() {
+    int wr = db.nativeDelete("delete from relations where id = ?")
+        .bind(1, 3)
+        .execute();
+
+    assertEquals(1, wr);
   }
 }
