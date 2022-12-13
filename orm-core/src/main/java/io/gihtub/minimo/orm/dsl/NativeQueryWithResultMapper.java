@@ -23,6 +23,15 @@ public class NativeQueryWithResultMapper<T> {
     this.mapper = mapper;
   }
 
+  public boolean exists() {
+    var newSql = this.context.generator().rewriteLimit(this.sql, 0, 1);
+    if (setter == null) {
+      return !this.context.executor().query(newSql, params, mapper).isEmpty();
+    }
+
+    return !this.context.executor().query(newSql, setter, mapper).isEmpty();
+  }
+
   public T one() {
     var v = list(1);
     return v == null || v.isEmpty() ? null : v.get(0);
@@ -42,5 +51,15 @@ public class NativeQueryWithResultMapper<T> {
       return this.context.executor().query(newSql, params, mapper);
     }
     return this.context.executor().query(newSql, setter, mapper);
+  }
+
+  public long count() {
+    // rewrite sql
+    var newSql = this.context.generator().rewriteProjectForCount(this.sql);
+    if (setter == null) {
+      return this.context.executor().query(newSql, params, (rs, i) -> rs.getLong(1)).get(0);
+    }
+
+    return this.context.executor().query(newSql, setter, (rs, i) -> rs.getLong(1)).get(0);
   }
 }

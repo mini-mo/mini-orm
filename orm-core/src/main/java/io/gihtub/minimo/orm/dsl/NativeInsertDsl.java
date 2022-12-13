@@ -11,8 +11,6 @@ public class NativeInsertDsl {
   protected final OrmContext context;
 
   protected String sql;
-  protected Object[] params;
-  protected PreparedStatementSetter preparedStatementSetter;
   private Map<Integer, Object> pm;
 
   public NativeInsertDsl(String sql, OrmContext context) {
@@ -31,13 +29,11 @@ public class NativeInsertDsl {
   }
 
   public int execute() {
-    preparedStatementSetter = this.context.setter(params());
-    return this.context.executor().update(sql, preparedStatementSetter);
+    return this.context.executor().update(sql, params());
   }
 
   public long executeAndReturnGeneratedKey() {
-    preparedStatementSetter = this.context.setter(params());
-    return this.context.executor().insert(sql, preparedStatementSetter);
+    return this.context.executor().insert(sql, params());
   }
 
 }

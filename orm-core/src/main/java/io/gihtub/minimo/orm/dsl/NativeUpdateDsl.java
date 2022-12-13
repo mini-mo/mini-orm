@@ -1,7 +1,6 @@
 package io.gihtub.minimo.orm.dsl;
 
 import io.gihtub.minimo.orm.OrmContext;
-import io.gihtub.minimo.orm.executor.PreparedStatementSetter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,8 +9,6 @@ public class NativeUpdateDsl {
   protected final OrmContext context;
 
   protected String sql;
-  protected Object[] params;
-  protected PreparedStatementSetter preparedStatementSetter;
   private Map<Integer, Object> pm;
 
   public NativeUpdateDsl(String sql, OrmContext context) {
@@ -30,7 +27,6 @@ public class NativeUpdateDsl {
   }
 
   public int execute() {
-    preparedStatementSetter = this.context.setter(params());
-    return this.context.executor().update(sql, preparedStatementSetter);
+    return this.context.executor().update(sql, params());
   }
 }

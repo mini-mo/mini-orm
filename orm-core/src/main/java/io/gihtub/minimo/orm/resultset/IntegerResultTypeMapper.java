@@ -12,6 +12,9 @@ public class IntegerResultTypeMapper implements ResultTypeMapper<Integer> {
 
   @Override
   public Integer map(JDBCType type, Object value) {
+    if (value == null) {
+      return null;
+    }
     return ((Integer) value);
   }
 }

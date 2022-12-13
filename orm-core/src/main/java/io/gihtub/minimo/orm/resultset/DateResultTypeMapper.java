@@ -14,6 +14,9 @@ public class DateResultTypeMapper implements ResultTypeMapper<Date> {
 
   @Override
   public Date map(JDBCType type, Object value) {
+    if (value == null) {
+      return null;
+    }
     var ts = (Timestamp) value;
     return new Date(ts.getTime());
   }

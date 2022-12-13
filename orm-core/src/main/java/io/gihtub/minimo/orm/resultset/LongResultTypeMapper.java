@@ -12,6 +12,9 @@ public class LongResultTypeMapper implements ResultTypeMapper<Long> {
 
   @Override
   public Long map(JDBCType type, Object value) {
+    if (value == null) {
+      return null;
+    }
     return ((Long) value);
   }
 }

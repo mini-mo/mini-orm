@@ -8,6 +8,7 @@ import io.gihtub.minimo.orm.executor.PreparedStatementSetter;
 import io.gihtub.minimo.orm.parameter.PreparedStatementParameterSetter;
 import io.gihtub.minimo.orm.resultset.ResultTypeMapper;
 import io.gihtub.minimo.orm.resultset.RowMapper;
+import io.gihtub.minimo.orm.table.MetaTable;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public record OrmContext(DatabaseTemplateConfig config, Generator generator, Executor executor) {
 
   private static Map<Class<?>, RowMapper<?>> mappers = new ConcurrentHashMap<>();
+  private static Map<Class<?>, MetaTable> tables = new ConcurrentHashMap<>();
 
   public int defaultLimit() {
     return config.getDefaultLimit();
@@ -120,5 +122,15 @@ public record OrmContext(DatabaseTemplateConfig config, Generator generator, Exe
       log.error("failed instance for {}", cls);
       throw new RuntimeException(e);
     }
+  }
+
+  public <T> MetaTable lookupTable(Class<T> entityCls) {
+    if (tables.containsKey(entityCls)) {
+      return tables.get(entityCls);
+    }
+
+    var table = new MetaTable(entityCls);
+    tables.put(entityCls, table);
+    return table;
   }
 }

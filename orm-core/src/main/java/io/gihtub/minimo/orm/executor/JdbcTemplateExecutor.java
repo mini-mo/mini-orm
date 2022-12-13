@@ -1,13 +1,10 @@
 package io.gihtub.minimo.orm.executor;
 
 import io.gihtub.minimo.orm.resultset.RowMapper;
+import org.springframework.jdbc.core.ArgumentPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.List;
@@ -48,11 +45,31 @@ public class JdbcTemplateExecutor implements Executor {
 
   @Override
   public int update(String sql, PreparedStatementSetter setter) {
+    return doUpdate(sql, setter::setValues);
+  }
+
+  @Override
+  public int update(String sql, Object[] params) {
+    var setter = new ArgumentPreparedStatementSetter(params);
+    return doUpdate(sql, setter);
+  }
+
+  private int doUpdate(String sql, org.springframework.jdbc.core.PreparedStatementSetter setter) {
     return this.jdbcTemplate.update(sql, setter::setValues);
   }
 
   @Override
   public long insert(String sql, PreparedStatementSetter setter) {
+    return doInsert(sql, setter::setValues);
+  }
+
+  @Override
+  public long insert(String sql, Object[] params) {
+    var setter = new ArgumentPreparedStatementSetter(params);
+    return doInsert(sql, setter);
+  }
+
+  private long doInsert(String sql, org.springframework.jdbc.core.PreparedStatementSetter setter) {
     var keyHolder = new GeneratedKeyHolder();
     int rows = this.jdbcTemplate.update(con -> {
       var ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);

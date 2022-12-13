@@ -21,6 +21,14 @@ public abstract class BaseQueryDsl {
     this.preparedStatementSetter = preparedStatementSetter;
   }
 
+  public String getSql() {
+    return sql;
+  }
+
+  public Object[] getParams() {
+    return params;
+  }
+
   protected void beforeExecute() {
   }
 

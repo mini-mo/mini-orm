@@ -12,6 +12,9 @@ public class StringResultTypeMapper implements ResultTypeMapper<String> {
 
   @Override
   public String map(JDBCType type, Object value) {
+    if (value == null) {
+      return null;
+    }
     return ((String) value);
   }
 }

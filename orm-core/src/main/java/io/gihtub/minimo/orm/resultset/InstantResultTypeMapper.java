@@ -14,6 +14,9 @@ public class InstantResultTypeMapper implements ResultTypeMapper<Instant> {
 
   @Override
   public Instant map(JDBCType type, Object value) {
+    if (value == null) {
+      return null;
+    }
     var ts = (Timestamp) value;
     return Instant.ofEpochMilli(ts.getTime());
   }

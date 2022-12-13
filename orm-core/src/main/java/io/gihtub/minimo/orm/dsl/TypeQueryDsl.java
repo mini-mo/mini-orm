@@ -1,25 +1,28 @@
 package io.gihtub.minimo.orm.dsl;
 
 import io.gihtub.minimo.orm.OrmContext;
-import io.gihtub.minimo.orm.annotations.Table;
 import io.gihtub.minimo.orm.dsl.criteria.Criteria;
 import io.gihtub.minimo.orm.resultset.RowMapper;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class TypeQueryDsl<T> extends BaseQueryDsl {
   private final Class<T> clazz;
+  private final String tableName;
+
+  private List<Sort> sorts = new ArrayList<>();
 
   public TypeQueryDsl(OrmContext context, Class<T> clazz) {
     super(null, null, context, null);
     this.clazz = clazz;
 
-    var anno = this.clazz.getAnnotation(Table.class);
-    if (anno == null) {
-      throw new IllegalStateException("failed get table annotation from type query with class " + clazz.getCanonicalName());
-    }
-    this.sql = "SELECT * FROM " + this.clazz.getAnnotation(Table.class).value();
+    var t = this.context.lookupTable(this.clazz);
+    this.tableName = t.tableName();
+    this.sql = "SELECT * FROM " + tableName;
   }
 
   public TypeQueryDsl<T> where(Criteria criteria) {
@@ -31,25 +34,27 @@ public class TypeQueryDsl<T> extends BaseQueryDsl {
     return this;
   }
 
-//  public T one() {
-//    var v = list(1);
-//    return v == null || v.isEmpty() ? null : v.get(0);
-//  }
-//
-//  public List<T> list() {
-//    return list(0, context.defaultLimit());
-//  }
-//
-//  public List<T> list(int limit) {
-//    return list(0, limit);
-//  }
-//
-//  public List<T> list(long offset, int limit) {
-//    return execute().list(offset, limit);
-//  }
+  public TypeQueryDsl<T> orderBy(Sort... sorts) {
+    this.sorts.addAll(Arrays.stream(sorts).toList());
+    return this;
+  }
 
   public NativeQueryWithResultMapper<T> execute() {
+    if (!this.sorts.isEmpty()) {
+      this.sql = this.sql + genSorts();
+    }
     RowMapper<T> rowMapper = this.context.getOrCreateRowMapper(clazz);
     return new NativeQueryWithResultMapper<>(sql, params, preparedStatementSetter, context, rowMapper);
+  }
+
+  private String genSorts() {
+    if (this.sorts.isEmpty()) {
+      return "";
+    }
+    var sb = new StringBuilder();
+    sb.append(" order by ");
+    var body = sorts.stream().map(it -> this.context.generator().gen(it)).collect(Collectors.joining(","));
+    sb.append(body).append(" ");
+    return sb.toString();
   }
 }

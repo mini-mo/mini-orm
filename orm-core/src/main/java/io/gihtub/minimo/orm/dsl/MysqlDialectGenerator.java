@@ -41,12 +41,12 @@ public class MysqlDialectGenerator implements Generator {
     if (bin instanceof LikeCriteria like) {
       return Pair.of(like.name + " like ?", new Object[]{"%" + like.v + "%"});
     }
-    if (bin instanceof IntegerInCriteria ii) {
+    if (bin instanceof NumberInCriteria ii) {
       var len = ii.v.size();
       List<String> qs = new ArrayList<>();
-      Integer[] objs = new Integer[len];
+      Number[] objs = new Number[len];
       int i = 0;
-      for (Integer v : ii.v) {
+      for (Number v : ii.v) {
         qs.add("?");
         objs[i++] = v;
       }
@@ -79,6 +79,27 @@ public class MysqlDialectGenerator implements Generator {
         });
 
     return Pair.of("(" + String.join(" OR ", sts) + ")", objects.toArray(new Object[0]));
+  }
+
+  @Override
+  public String gen(Sort sort) {
+    if (sort instanceof SortDesc sd) {
+      return gen(sd);
+    }
+    if (sort instanceof SortAsc sa) {
+      return gen(sa);
+    }
+    throw new IllegalStateException();
+  }
+
+  @Override
+  public String gen(SortAsc asc) {
+    return asc.column() + " ASC";
+  }
+
+  @Override
+  public String gen(SortDesc desc) {
+    return desc.column() + " DESC";
   }
 
   @Override
@@ -125,4 +146,12 @@ public class MysqlDialectGenerator implements Generator {
     return Pair.of("(" + String.join(" AND ", sts) + ")", objects.toArray(new Object[0]));
   }
 
+  @Override
+  public String rewriteProjectForCount(String sql) {
+    var s = sql.toLowerCase();
+    var si = s.indexOf("select ");
+    var ei = s.indexOf(" from ", si);
+
+    return sql.substring(0, si + 7) + " count(1) " + sql.substring(ei);
+  }
 }

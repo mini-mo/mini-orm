@@ -2,6 +2,7 @@ package io.gihtub.minimo.orm;
 
 import com.zaxxer.hikari.HikariDataSource;
 import io.gihtub.minimo.orm.dsl.MysqlDialectGenerator;
+import io.gihtub.minimo.orm.dsl.Sort;
 import io.gihtub.minimo.orm.dsl.criteria.Criteria;
 import io.gihtub.minimo.orm.executor.JdbcTemplateExecutor;
 import org.junit.jupiter.api.AfterAll;
@@ -13,6 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -128,11 +130,20 @@ class DatabaseTemplateTest {
 
   @Test
   void test_single_table_query_api() {
-    User one = db.from(User.class)
+    var q = db.from(User.class)
         .where(Criteria.column("id").is(1))
-        .execute()
-        .one();
+        .execute();
+    assertTrue(q.exists());
+
+    User one = q.one();
     assertNotNull(one);
+
+    var u2 = db.findById(1, User.class);
+    assertNotNull(u2);
+
+    var us = db.findByIds(List.of(1, 2), User.class);
+    assertEquals(2, us.size());
+
   }
 
   @Test
@@ -166,15 +177,6 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_query_2() {
-    // find by id
-    // find by ids
-    // exists
-    // count
-    // page
-  }
-
-  @Test
   void test_update() {
     var sql = "update users set name = ? where id = ? limit 1";
     int wr = db.createNativeUpdate(sql)
@@ -182,6 +184,11 @@ class DatabaseTemplateTest {
         .bind(2, 1)
         .execute();
     assertEquals(1, wr);
+
+    var wr2 = db.createUpdate(sql, "test", 1)
+        .execute();
+
+    assertEquals(1, wr2);
   }
 
   @Test
@@ -193,20 +200,87 @@ class DatabaseTemplateTest {
         .execute();
     assertEquals(1, wr);
 
-    var key = db.createNativeInsert("insert into relations(bid, uid) values ( ?, ?)")
+    var s2 = "insert into relations(bid, uid) values ( ?, ?)";
+    var key = db.createNativeInsert(s2)
         .bind(1, 2)
         .bind(2, 3)
         .executeAndReturnGeneratedKey();
 
-    assertTrue(key > 3);
+    assertTrue(key > 4);
+
+    var wr2 = db.createInsert(sql, 4, "test-insert-2")
+        .execute();
+    assertEquals(1, wr2);
+
+    var k2 = db.createInsert(s2, 3, 4)
+        .executeAndReturnGeneratedKey();
+    assertTrue(k2 > key);
   }
 
   @Test
   void test_delete() {
-    int wr = db.nativeDelete("delete from relations where id = ?")
+    var s = "delete from relations where id = ?";
+    int wr = db.createNativeDelete(s)
         .bind(1, 3)
         .execute();
-
     assertEquals(1, wr);
+
+    var wr2 = db.createDelete(s, 2)
+        .execute();
+    assertEquals(1, wr2);
+  }
+
+  @Test
+  void test_save() {
+    // new one
+    var u = new User(5, "test-save");
+    boolean wr = db.save(u);
+    assertTrue(wr);
+
+    // update exists one
+    User u2 = db.findById(5, User.class);
+    assertNotNull(u2);
+
+    // return generated id
+    var r = new UserBookRelation(10, 10);
+    wr = db.save(r);
+    assertTrue(wr);
+    assertNotNull(r.getId());
+  }
+
+  @Test
+  void test_order() {
+    var u = db.from(User.class)
+        .orderBy(Sort.desc("id"))
+        .execute()
+        .one();
+    assertTrue(u.getId() > 1);
+  }
+
+  @Test
+  void test_without_annotation() {
+    var b = db.from(Books.class)
+        .execute().one();
+    assertNotNull(b);
+
+    var obj = new Books();
+    obj.setName("test-one");
+    obj.setCreatedAt(new Date());
+    db.save(obj);
+    var id = obj.getId();
+    assertNotNull(id);
+
+    var nb = db.findById(id, Books.class);
+    var un = "test-update";
+    nb.setName(un);
+    db.save(nb);
+    var nb2 = db.findById(id, Books.class);
+    assertEquals(un, nb2.getName());
+  }
+
+  @Test
+  void test_count() {
+    var cnt = db.from(Books.class).execute().count();
+    assertTrue(cnt > 1);
   }
 }

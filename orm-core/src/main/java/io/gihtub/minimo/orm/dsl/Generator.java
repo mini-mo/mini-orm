@@ -23,5 +23,12 @@ public interface Generator {
 
   Pair<String, Object[]> gen(OrCriteria or);
 
+  String gen(Sort sort);
+
+  String gen(SortAsc asc);
+  String gen(SortDesc desc);
+
   String rewriteLimit(String sql, long offset, int limit);
+
+  String rewriteProjectForCount(String sql);
 }

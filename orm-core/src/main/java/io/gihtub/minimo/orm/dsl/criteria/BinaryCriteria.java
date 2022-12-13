@@ -36,7 +36,7 @@ public class BinaryCriteria implements Criteria {
     return new LikeCriteria(this, value);
   }
 
-  public Criteria in(Collection<Integer> ids) {
-    return new IntegerInCriteria(this, ids);
+  public Criteria in(Collection<? extends Number> ids) {
+    return new NumberInCriteria(this, ids);
   }
 }
