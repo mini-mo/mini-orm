@@ -1,5 +1,6 @@
 package io.gihtub.minimo.orm;
 
+
 import io.gihtub.minimo.orm.resultset.ResultTypeMapper;
 
 import java.sql.JDBCType;

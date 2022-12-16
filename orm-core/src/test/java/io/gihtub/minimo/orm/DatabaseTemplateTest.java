@@ -1,10 +1,12 @@
 package io.gihtub.minimo.orm;
 
-import com.zaxxer.hikari.HikariDataSource;
 import io.gihtub.minimo.orm.dsl.MysqlDialectGenerator;
 import io.gihtub.minimo.orm.dsl.Sort;
 import io.gihtub.minimo.orm.dsl.criteria.Criteria;
 import io.gihtub.minimo.orm.executor.JdbcTemplateExecutor;
+import io.gihtub.minimo.orm.setter.BaseEnumSetter;
+import io.gihtub.minimo.orm.setter.DefaultEnumSetter;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +22,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DatabaseTemplateTest {
+public class DatabaseTemplateTest {
 
   static HikariDataSource hds;
 
@@ -38,6 +40,8 @@ class DatabaseTemplateTest {
       sts.execute("create table users(id int primary key, name varchar(20), nick varchar(20), createdAt timestamp)");
       sts.execute("create table books(id int primary key auto_increment, name varchar(20), createdAt timestamp)");
       sts.execute("create table relations(id int primary key auto_increment, uid int not null, bid int not null)");
+      sts.execute("create table cars(id int primary key auto_increment, code int not null, brand varchar(20) not null)");
+      sts.execute("create table versions(id int primary key, name varchar(20), version int not null)");
 
       sts.execute("insert into users values(1, 'test', 'vvv', '2022-12-02 11:11:11') ");
       sts.execute("insert into users values(2, 'test-2', 'vvv', '2022-12-02 11:11:11') ");
@@ -49,6 +53,10 @@ class DatabaseTemplateTest {
       sts.execute("insert into relations(uid,bid) values(1, 2) ");
       sts.execute("insert into relations(uid,bid) values(2, 2) ");
 
+      sts.execute("insert into cars(code, brand) values(1, 'xx') ");
+      sts.execute("insert into cars(code, brand) values(2, 'yy') ");
+
+      sts.execute("insert into versions(id, name, version) values(1, 'yy', 1) ");
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
@@ -65,7 +73,7 @@ class DatabaseTemplateTest {
   JdbcTemplate jdbcTemplate;
 
   @BeforeEach
-  void setUp() {
+  public void setUp() {
     ds = hds;
     jdbcTemplate = new JdbcTemplate(ds);
 
@@ -74,12 +82,16 @@ class DatabaseTemplateTest {
         .enableBuiltinResultTypeMappers()
         .registerResultMapper(new UserNameTypeMapper())
         .registerParameterSetter(new UserNameParameterSetter())
+        .enumMapper(AutoEnumResultTypeMapper.class)
+        .registerParameterSetter(new DefaultEnumSetter())
+        .registerParameterSetter(new BaseEnumSetter())
         .build();
+
     db = new DatabaseTemplate(new OrmContext(cfg, new MysqlDialectGenerator(), new JdbcTemplateExecutor(jdbcTemplate)));
   }
 
   @Test
-  void test_native_query_api() {
+  public void test_native_query_api() {
     // native query
     Map<String, Object> one = db.nativeQuery("select * from users where name = ?")
         .bind(1, "test")
@@ -108,7 +120,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_query_api() {
+  public void test_query_api() {
     // auto binding
     var one = db.createQuery("select * from users where name = ?", new UserName("test"))
         .asMap()
@@ -129,7 +141,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_single_table_query_api() {
+  public void test_single_table_query_api() {
     var q = db.from(User.class)
         .where(Criteria.column("id").is(1))
         .execute();
@@ -147,7 +159,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_composite_query_api() {
+  public void test_composite_query_api() {
     // users 用户表
     // books 书
     // relations 用户/书关系 (uid int, bid int)
@@ -177,7 +189,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_update() {
+  public void test_update() {
     var sql = "update users set name = ? where id = ? limit 1";
     int wr = db.createNativeUpdate(sql)
         .bind(1, "test")
@@ -192,7 +204,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_insert() {
+  public void test_insert() {
     var sql = "insert into users(id, name) values (?, ?)";
     var wr = db.createNativeInsert(sql)
         .bind(1, 3)
@@ -218,7 +230,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_delete() {
+  public void test_delete() {
     var s = "delete from relations where id = ?";
     int wr = db.createNativeDelete(s)
         .bind(1, 3)
@@ -231,7 +243,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_save() {
+  public void test_save() {
     // new one
     var u = new User(5, "test-save");
     boolean wr = db.save(u);
@@ -249,7 +261,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_order() {
+  public void test_order() {
     var u = db.from(User.class)
         .orderBy(Sort.desc("id"))
         .execute()
@@ -258,7 +270,7 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_without_annotation() {
+  public void test_without_annotation() {
     var b = db.from(Books.class)
         .execute().one();
     assertNotNull(b);
@@ -279,8 +291,39 @@ class DatabaseTemplateTest {
   }
 
   @Test
-  void test_count() {
+  public void test_count() {
     var cnt = db.from(Books.class).execute().count();
     assertTrue(cnt > 1);
+  }
+
+  @Test
+  public void test_enum() {
+    var list = db.from(Cars.class)
+        .execute()
+        .list(2);
+    assertTrue(list.size() == 2);
+
+    var et = new Cars();
+    et.setCode(CarCode.z);
+    et.setBrand(Brand.yy);
+
+    db.save(et);
+    assertEquals(3, et.getId());
+
+    var neo = db.findById(3, Cars.class);
+    assertNotNull(neo);
+  }
+
+  @Test
+  public void test_version() {
+    var v = db.findById(1, Versions.class);
+    assertNotNull(v);
+
+    v.setName("hhh");
+    db.save(v);
+
+    var v2 = db.findById(1, Versions.class);
+    assertEquals(2, v2.getVersion());
+    assertEquals("hhh", v2.getName());
   }
 }

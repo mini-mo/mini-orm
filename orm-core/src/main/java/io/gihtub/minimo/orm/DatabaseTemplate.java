@@ -69,11 +69,11 @@ public class DatabaseTemplate {
     Objects.requireNonNull(obj);
 
     var table = this.context.lookupTable(obj.getClass());
-    Number v = table.getIdValue(obj);
-    if (v == null) { // new one
+    Number idV = table.getIdValue(obj);
+    if (idV == null) { // new one
       return doInsert(obj, table);
     } else {
-      Object exists = this.findById(v, obj.getClass());
+      Object exists = this.findById(idV, obj.getClass());
       if (exists == null) { // new one
         // insert into xx(x,y,z) values (x,y,z)
         return doInsert(obj, table);
@@ -86,10 +86,19 @@ public class DatabaseTemplate {
     if (params.isEmpty()) {
       throw new IllegalStateException();
     }
-    Object[] pa = new Object[params.size() + 1];
+    // version?
+    Pair<String, Object> version = table.version(obj);
+    int append = 1;
+    if (version != null) {
+      append++;
+    }
+    Object[] pa = new Object[params.size() + append];
     var vsa = params.values().toArray();
     System.arraycopy(vsa, 0, pa, 0, vsa.length);
-    pa[params.size()] = v;
+    pa[params.size()] = idV;
+    if (version != null) {
+      pa[params.size() + 1] = version.right();
+    }
 
     var ks = params.keySet().toArray(new String[0]);
     var body = Arrays.stream(ks).map(it -> it + " = ?")
@@ -98,11 +107,21 @@ public class DatabaseTemplate {
     var sb = new StringBuilder();
     sb.append("update ").append(table.tableName())
         .append(" set ")
-        .append(body)
-        .append(" where ")
+        .append(body);
+
+    if (version != null) {
+      sb.append(", ").append(version.left()).append(" = version + 1");
+    }
+
+    sb.append(" where ")
         .append(table.getIdColumn())
-        .append(" = ?")
-        .append(" limit 1")
+        .append(" = ?");
+
+    if (version != null) {
+      sb.append(" and ").append(version.left()).append(" = ? ");
+    }
+
+    sb.append(" limit 1")
     ;
 
     var sql = sb.toString();
@@ -135,7 +154,7 @@ public class DatabaseTemplate {
     return true;
   }
 
-  public <T> T findById(Number id, java.lang.Class<T> entityCls) {
+  public <T> T findById(Number id, Class<T> entityCls) {
     var query = new TypeQueryDsl<T>(this.context, entityCls);
     var table = this.context.lookupTable(entityCls);
     String ic = table.getIdColumn();
@@ -143,12 +162,12 @@ public class DatabaseTemplate {
     return query.execute().one();
   }
 
-  public <T> Collection<T> findByIds(List<Number> ids, java.lang.Class<T> entityCls) {
+  public <T> Collection<T> findByIds(List<? extends Number> ids, Class<T> entityCls) {
     var query = new TypeQueryDsl<T>(this.context, entityCls);
     var table = this.context.lookupTable(entityCls);
     String ic = table.getIdColumn();
     query.where(Criteria.column(ic).in(ids));
-    return query.execute().list(0, ids.size());
+    return query.execute().list(ids.size());
   }
 
 //  public <T> T getMapper(Class<T> mapper) {

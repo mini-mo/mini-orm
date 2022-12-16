@@ -8,14 +8,14 @@ import java.util.Set;
 /**
  * resultSet to biz object
  */
-public interface ResultTypeMapper<JavaType> {
+public interface ResultTypeMapper<T> {
 
   /**
    * 支持的 jdbc types
    */
   Set<JDBCType> types();
 
-  JavaType map(JDBCType type, Object value);
+  T map(JDBCType type, Object value);
 
 
   /**
@@ -23,7 +23,7 @@ public interface ResultTypeMapper<JavaType> {
    *
    * @return class from JavaTypeT
    */
-  default Class<JavaType> genericType() {
+  default Class<T> genericType() {
     Class<? extends ResultTypeMapper> cls = this.getClass();
     for (Type genericInterface : cls.getGenericInterfaces()) {
       if (genericInterface instanceof ParameterizedType pt) {
@@ -31,7 +31,7 @@ public interface ResultTypeMapper<JavaType> {
             .getTypeName()
             .equalsIgnoreCase(ResultTypeMapper.class.getCanonicalName())) {
           var actualTypeArguments = pt.getActualTypeArguments();
-          return ((Class<JavaType>) actualTypeArguments[0]);
+          return ((Class<T>) actualTypeArguments[0]);
         }
       }
     }

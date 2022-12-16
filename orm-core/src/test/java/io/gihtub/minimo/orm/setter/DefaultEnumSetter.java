@@ -1,5 +1,4 @@
-package io.gihtub.minimo.orm;
-
+package io.gihtub.minimo.orm.setter;
 
 import io.gihtub.minimo.orm.parameter.PreparedStatementParameterSetter;
 
@@ -7,14 +6,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-public class UserNameParameterSetter implements PreparedStatementParameterSetter<UserName> {
+public class DefaultEnumSetter implements PreparedStatementParameterSetter<Enum> {
   @Override
   public void setNull(PreparedStatement ps, int index) throws SQLException {
-    ps.setNull(index, Types.VARBINARY);
+    ps.setNull(index, Types.VARCHAR);
   }
 
   @Override
   public void set(PreparedStatement ps, int index, Object value) throws SQLException {
-    ps.setString(index, ((UserName) value).getValue());
+    ps.setString(index, ((Enum) value).name());
   }
 }

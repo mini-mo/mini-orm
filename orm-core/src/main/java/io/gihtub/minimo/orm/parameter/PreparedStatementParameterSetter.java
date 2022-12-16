@@ -14,17 +14,17 @@ public interface PreparedStatementParameterSetter<T> {
 
   void set(PreparedStatement ps, int index, Object value) throws SQLException;
 
-  /**
-   * @param v instance
-   * @return instance with type T
-   * @throws ClassCastException
-   */
-  default T convert(Object v) throws ClassCastException {
-    if (v == null) {
-      return (T) null;
-    }
-    return ((T) v);
-  }
+//  /**
+//   * @param v instance
+//   * @return instance with type T
+//   * @throws ClassCastException
+//   */
+//  default T convert(Object v) throws ClassCastException {
+//    if (v == null) {
+//      return (T) null;
+//    }
+//    return ((T) v);
+//  }
 
   /**
    * 泛型参数 T

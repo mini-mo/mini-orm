@@ -41,17 +41,23 @@ public class MysqlDialectGenerator implements Generator {
     if (bin instanceof LikeCriteria like) {
       return Pair.of(like.name + " like ?", new Object[]{"%" + like.v + "%"});
     }
-    if (bin instanceof NumberInCriteria ii) {
+    if (bin instanceof InCriteria ii) {
       var len = ii.v.size();
       List<String> qs = new ArrayList<>();
-      Number[] objs = new Number[len];
+      Object[] objs = new Object[len];
       int i = 0;
-      for (Number v : ii.v) {
+      for (Object v : ii.v) {
         qs.add("?");
         objs[i++] = v;
       }
       var q = String.join(",", qs);
       return Pair.of(ii.name + " in ( " + q + " )", objs);
+    }
+    if (bin instanceof GteCriteria gte) {
+      return Pair.of(gte.name + " >= ?", new Object[]{gte.v});
+    }
+    if (bin instanceof LteCriteria lte) {
+      return Pair.of(lte.name + " <= ?", new Object[]{lte.v});
     }
     if (bin instanceof RangeCriteria range) {
       return Pair.of(range.name + " BETWEEN ? AND ?", new Object[]{
@@ -121,6 +127,15 @@ public class MysqlDialectGenerator implements Generator {
     return sql.substring(0, start) + genLimit(offset, limit);
   }
 
+  @Override
+  public String rewriteProjectForCount(String sql) {
+    var s = sql.toLowerCase();
+    var si = s.indexOf("select ");
+    var ei = s.indexOf(" from ", si);
+
+    return sql.substring(0, si + 7) + " count(1) " + sql.substring(ei);
+  }
+
   private String genLimit(long offset, int limit) {
     if (offset == 0L) {
       return " LIMIT " + limit;
@@ -146,12 +161,4 @@ public class MysqlDialectGenerator implements Generator {
     return Pair.of("(" + String.join(" AND ", sts) + ")", objects.toArray(new Object[0]));
   }
 
-  @Override
-  public String rewriteProjectForCount(String sql) {
-    var s = sql.toLowerCase();
-    var si = s.indexOf("select ");
-    var ei = s.indexOf(" from ", si);
-
-    return sql.substring(0, si + 7) + " count(1) " + sql.substring(ei);
-  }
 }

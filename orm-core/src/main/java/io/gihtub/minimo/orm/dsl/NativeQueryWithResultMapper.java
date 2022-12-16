@@ -3,9 +3,11 @@ package io.gihtub.minimo.orm.dsl;
 import io.gihtub.minimo.orm.OrmContext;
 import io.gihtub.minimo.orm.executor.PreparedStatementSetter;
 import io.gihtub.minimo.orm.resultset.RowMapper;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 public class NativeQueryWithResultMapper<T> {
 
   private final String sql;
@@ -25,6 +27,7 @@ public class NativeQueryWithResultMapper<T> {
 
   public boolean exists() {
     var newSql = this.context.generator().rewriteLimit(this.sql, 0, 1);
+    log.debug("sql : {} ;\n params: {}", newSql, this.params);
     if (setter == null) {
       return !this.context.executor().query(newSql, params, mapper).isEmpty();
     }
@@ -47,6 +50,7 @@ public class NativeQueryWithResultMapper<T> {
 
   public List<T> list(long offset, int limit) {
     var newSql = this.context.generator().rewriteLimit(this.sql, offset, limit);
+    log.debug("sql : {} ;\n params: {}", newSql, this.params);
     if (setter == null) {
       return this.context.executor().query(newSql, params, mapper);
     }
@@ -56,6 +60,7 @@ public class NativeQueryWithResultMapper<T> {
   public long count() {
     // rewrite sql
     var newSql = this.context.generator().rewriteProjectForCount(this.sql);
+    log.debug("sql : {} ;\n params: {}", newSql, this.params);
     if (setter == null) {
       return this.context.executor().query(newSql, params, (rs, i) -> rs.getLong(1)).get(0);
     }

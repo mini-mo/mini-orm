@@ -9,7 +9,7 @@ public interface Criteria {
     return new BinaryCriteria(column);
   }
 
-  static Criteria and(Criteria... criteria) {
+  static AndCriteria and(Criteria... criteria) {
     return new AndCriteria(criteria);
   }
 

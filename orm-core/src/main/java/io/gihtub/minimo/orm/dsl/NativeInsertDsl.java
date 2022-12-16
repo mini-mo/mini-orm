@@ -1,8 +1,6 @@
 package io.gihtub.minimo.orm.dsl;
 
 import io.gihtub.minimo.orm.OrmContext;
-import io.gihtub.minimo.orm.executor.PreparedStatementSetter;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,9 +1,11 @@
 package io.gihtub.minimo.orm.table;
 
+import io.gihtub.minimo.orm.Pair;
 import io.gihtub.minimo.orm.annotations.Id;
 import io.gihtub.minimo.orm.annotations.NamingStrategy;
 import io.gihtub.minimo.orm.annotations.PropertyNamingStrategy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
@@ -123,6 +125,10 @@ public class MetaTable<T> {
         continue; // skip
       }
 
+      if (field.isAnnotationPresent(Version.class) || field.isAnnotationPresent(io.gihtub.minimo.orm.annotations.Version.class)) {
+        continue;
+      }
+
       field.setAccessible(true);
       try {
         var v = field.get(obj);
@@ -135,6 +141,28 @@ public class MetaTable<T> {
       }
     }
     return map;
+  }
+
+  public Pair<String, Object> version(Object obj) {
+    for (Field field : this.entity.getDeclaredFields()) {
+      if (Modifier.isTransient(field.getModifiers())) { //  transient kw
+        continue; // skip
+      }
+
+      if (field.isAnnotationPresent(Version.class) || field.isAnnotationPresent(io.gihtub.minimo.orm.annotations.Version.class)) {
+        field.setAccessible(true);
+        try {
+          var v = field.get(obj);
+          if (v == null) {
+            continue;
+          }
+          return Pair.of(namingStrategy.transform(field.getName()), v);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+    return null;
   }
 
   private <T> T newInstance(Class<T> cls) {

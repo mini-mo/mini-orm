@@ -1,6 +1,7 @@
 package io.gihtub.minimo.orm.dsl.criteria;
 
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * 二元
@@ -36,7 +37,15 @@ public class BinaryCriteria implements Criteria {
     return new LikeCriteria(this, value);
   }
 
-  public Criteria in(Collection<? extends Number> ids) {
-    return new NumberInCriteria(this, ids);
+  public Criteria in(Collection<? extends Object> ids) {
+    return new InCriteria(this, ids);
+  }
+
+  public Criteria lte(Object v) {
+    return new LteCriteria(this, v);
+  }
+
+  public Criteria gte(Object v) {
+    return new GteCriteria(this, v);
   }
 }
