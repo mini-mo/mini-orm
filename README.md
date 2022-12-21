@@ -6,6 +6,22 @@
 - 简化单表操作
 - 灵活构建查询条件
 
+## 快速开始
+
+可参考测试用例 [`src/test/java/io/gihtub/minimo/orm/DatabaseTemplateTest.java`](src/test/java/io/gihtub/minimo/orm/DatabaseTemplateTest.java)
+
+可通过 maven 中央仓库引入
+
+<https://central.sonatype.dev/artifact/io.github.mini-mo/mini-orm/0.0.1>
+
+```xml
+<dependency>
+    <groupId>io.github.mini-mo</groupId>
+    <artifactId>mini-orm</artifactId>
+    <version>0.0.1</version>
+</dependency>
+```
+
 ## 案例
 
 1. 单表操作
@@ -32,6 +48,7 @@ List<User> users = db.from(User.class)
             column("createdAt").range(begin, end)
     )
     .order(by("id").desc()))
+    .execute()
     .list(0, 10) // list() | list(10)
 ```
 
