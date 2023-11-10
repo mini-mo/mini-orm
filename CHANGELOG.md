@@ -6,8 +6,10 @@
 
 ### Added
 
-
 ### Changed
+
+- [x] 移除 `jakarta.persistence.api` 强制依赖
+- [ ] 移除 `lombok`
 
 ### Fixed
 

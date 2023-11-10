@@ -1,1 +1,0 @@
-package io.gihtub.minimo.orm;
