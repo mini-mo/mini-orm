@@ -5,6 +5,10 @@ import io.github.minimo.orm.dsl.Generator;
 
 public interface Criteria {
 
+  static BinaryCriteria $(String column) {
+    return new BinaryCriteria(column);
+  }
+
   static BinaryCriteria column(String column) {
     return new BinaryCriteria(column);
   }
@@ -15,6 +19,10 @@ public interface Criteria {
 
   static Criteria or(Criteria... criteria) {
     return new OrCriteria(criteria);
+  }
+
+  static Criteria raw(String raw) {
+    return new RawCriteria(raw);
   }
 
   default Pair<String, Object[]> gen(Generator generator) {

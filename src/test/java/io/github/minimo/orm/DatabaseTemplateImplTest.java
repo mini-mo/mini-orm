@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class DatabaseTemplateTest {
+public class DatabaseTemplateImplTest {
 
   static HikariDataSource hds;
 
@@ -68,7 +68,7 @@ public class DatabaseTemplateTest {
     hds.close();
   }
 
-  DatabaseTemplate db;
+  DatabaseTemplateImpl db;
   DataSource ds;
 
   JdbcTemplate jdbcTemplate;
@@ -88,7 +88,7 @@ public class DatabaseTemplateTest {
         .registerParameterSetter(new BaseEnumSetter())
         .build();
 
-    db = new DatabaseTemplate(new OrmContext(cfg, new MysqlDialectGenerator(), new JdbcTemplateExecutor(jdbcTemplate)));
+    db = new DatabaseTemplateImpl(new OrmContext(cfg, new MysqlDialectGenerator(), new JdbcTemplateExecutor(jdbcTemplate)));
   }
 
   @Test
@@ -144,7 +144,7 @@ public class DatabaseTemplateTest {
   @Test
   public void test_single_table_query_api() {
     var q = db.from(User.class)
-        .where(Criteria.column("id").is(1))
+        .where(Criteria.$("id").is(1))
         .execute();
     Assertions.assertTrue(q.exists());
 
@@ -160,6 +160,14 @@ public class DatabaseTemplateTest {
   }
 
   @Test
+  public void test_typed_query() {
+    var q = db.from(User.class)
+        .where(Criteria.$(db.column(User::getName)).is("test"))
+        .execute();
+    Assertions.assertTrue(q.exists());
+  }
+
+  @Test
   public void test_composite_query_api() {
     // users 用户表
     // books 书
@@ -169,21 +177,21 @@ public class DatabaseTemplateTest {
 
     // map
     var lm = db.createCompositeQuery(sql)
-        .where(Criteria.column("b.name").is("test"))
+        .where(Criteria.$("b.name").is("test"))
         .asMap()
         .list(10);
     Assertions.assertFalse(lm.isEmpty());
 
     // class
     var ld = db.createCompositeQuery(sql)
-        .where(Criteria.column("b.name").is("test"))
+        .where(Criteria.$("b.name").is("test"))
         .map(UserBookDTO.class)
         .list(10);
     assertFalse(ld.isEmpty());
 
     // row mapper
     var ld_2 = db.createCompositeQuery(sql)
-        .where(Criteria.column("b.name").is("test"))
+        .where(Criteria.$("b.name").is("test"))
         .map((rs, i) -> new UserBookDTO(rs.getInt("id"), rs.getString("name")))
         .list(10);
     Assertions.assertFalse(ld_2.isEmpty());

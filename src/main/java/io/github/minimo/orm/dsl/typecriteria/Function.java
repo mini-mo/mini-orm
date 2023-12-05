@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 // SerializedLambda
 // https://www.jianshu.com/p/2ed82b6cd07b
-public interface Supplier<T> extends java.util.function.Supplier<T>, Serializable {
+@FunctionalInterface
+public interface Function<T, R> extends java.util.function.Function<T, R>, Serializable {
 
 }

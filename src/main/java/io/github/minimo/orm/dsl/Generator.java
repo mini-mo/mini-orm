@@ -5,6 +5,7 @@ import io.github.minimo.orm.dsl.criteria.AndCriteria;
 import io.github.minimo.orm.dsl.criteria.BinaryCriteria;
 import io.github.minimo.orm.dsl.criteria.Criteria;
 import io.github.minimo.orm.dsl.criteria.OrCriteria;
+import io.github.minimo.orm.dsl.criteria.RawCriteria;
 
 /**
  * sql 生成器
@@ -22,6 +23,8 @@ public interface Generator {
   Pair<String, Object[]> gen(AndCriteria and);
 
   Pair<String, Object[]> gen(OrCriteria or);
+
+  Pair<String, Object[]> gen(RawCriteria raw);
 
   String gen(Sort sort);
 

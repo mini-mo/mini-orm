@@ -222,4 +222,12 @@ public class MetaTable<T> {
       throw new RuntimeException(e);
     }
   }
+
+  public String column(String fieldName) {
+    try {
+      return namingStrategy.transform(this.entity.getDeclaredField(fieldName).getName());
+    } catch (NoSuchFieldException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

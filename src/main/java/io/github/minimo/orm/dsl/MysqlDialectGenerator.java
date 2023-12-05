@@ -15,6 +15,7 @@ import io.github.minimo.orm.dsl.criteria.NotNullCriteria;
 import io.github.minimo.orm.dsl.criteria.NullCriteria;
 import io.github.minimo.orm.dsl.criteria.OrCriteria;
 import io.github.minimo.orm.dsl.criteria.RangeCriteria;
+import io.github.minimo.orm.dsl.criteria.RawCriteria;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,8 +34,12 @@ public class MysqlDialectGenerator implements Generator {
     if (criteria instanceof BinaryCriteria bin) {
       return gen(bin);
     }
+    if (criteria instanceof RawCriteria raw) {
+      return gen(raw);
+    }
     throw new IllegalStateException();
   }
+
 
   @Override
   public Pair<String, Object[]> gen(BinaryCriteria bin) {
@@ -100,6 +105,11 @@ public class MysqlDialectGenerator implements Generator {
   }
 
   @Override
+  public Pair<String, Object[]> gen(RawCriteria raw) {
+    return Pair.of(raw.raw, new Object[0]);
+  }
+
+  @Override
   public String gen(Sort sort) {
     if (sort instanceof SortDesc sd) {
       return gen(sd);
@@ -158,7 +168,7 @@ public class MysqlDialectGenerator implements Generator {
   public Pair<String, Object[]> gen(AndCriteria and) {
     var children = and.criteria;
     if (children.length == 0) {
-      throw new IllegalStateException();
+      return Pair.of("(1 = 1)", new Object[0]);
     }
     List<String> sts = new ArrayList<>();
     List<Object> objects = new ArrayList<>();

@@ -7,7 +7,7 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class DatabaseTemplateConfigTest {
+class DatabaseTemplateImplConfigTest {
 
   @Test
   void test_config() {

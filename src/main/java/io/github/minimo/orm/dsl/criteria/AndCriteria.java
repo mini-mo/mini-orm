@@ -3,6 +3,10 @@ package io.github.minimo.orm.dsl.criteria;
 public class AndCriteria implements Criteria {
   public final Criteria[] criteria;
 
+  public AndCriteria() {
+    this.criteria = new Criteria[0];
+  }
+
   public AndCriteria(Criteria[] criteria) {
     this.criteria = criteria;
   }

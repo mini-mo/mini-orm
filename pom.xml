@@ -12,7 +12,7 @@
 
 <groupId>io.github.mini-mo</groupId>
 <artifactId>mini-orm</artifactId>
-<version>0.0.3-SNAPSHOT</version>
+<version>0.0.2</version>
 <packaging>jar</packaging>
 
 
@@ -58,6 +58,7 @@
     <groupId>org.springframework</groupId>
     <artifactId>spring-jdbc</artifactId>
     <version>5.3.23</version>
+    <scope>provided</scope>
   </dependency>
   <dependency>
     <groupId>org.slf4j</groupId>
@@ -69,7 +70,16 @@
     <groupId>jakarta.persistence</groupId>
     <artifactId>jakarta.persistence-api</artifactId>
     <version>3.1.0</version>
+    <scope>provided</scope>
   </dependency>
+
+  <dependency>
+    <groupId>org.jetbrains.kotlin</groupId>
+    <artifactId>kotlin-stdlib</artifactId>
+    <version>1.9.10</version>
+    <scope>provided</scope>
+  </dependency>
+
   <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>

@@ -59,6 +59,25 @@ public record OrmContext(DatabaseTemplateConfig config, Generator generator, Exe
             continue;
           }
           Class<?> javaType = field.getType();
+          if (javaType.isPrimitive()) {
+            if (javaType == int.class) {
+              javaType = Integer.class;
+            } else if (javaType == boolean.class) {
+              javaType = Boolean.class;
+            } else if (javaType == long.class) {
+              javaType = Long.class;
+            } else if (javaType == byte.class) {
+              javaType = Byte.class;
+            } else if (javaType == short.class) {
+              javaType = Short.class;
+            } else if (javaType == float.class) {
+              javaType = Float.class;
+            } else if (javaType == double.class) {
+              javaType = Double.class;
+            } else if (javaType == char.class) {
+              javaType = Character.class;
+            }
+          }
 
           ResultTypeMapper<?> mapper = lookupResultMapper(Pair.of(jdbcType, javaType));
           Object nv = mapper.map(jdbcType, rs.getObject(i));
