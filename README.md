@@ -8,7 +8,7 @@
 
 ## 快速开始
 
-可参考测试用例 [`src/test/java/io/github/minimo/orm/DatabaseTemplateTest.java`](src/test/java/io/github/minimo/orm/DatabaseTemplateTest.java)
+可参考测试用例 [`src/test/java/io/github/minimo/orm/DatabaseTemplateImplTest.java`](src/test/java/io/github/minimo/orm/DatabaseTemplateImplTest.java)
 
 可通过 maven 中央仓库引入
 
