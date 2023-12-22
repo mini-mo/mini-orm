@@ -12,13 +12,13 @@
 
 可通过 maven 中央仓库引入
 
-<https://central.sonatype.dev/artifact/io.github.mini-mo/mini-orm/0.0.1>
+[<https://central.sonatype.dev/artifact/io.github.mini-mo/mini-orm/0.0.1>](https://central.sonatype.com/artifact/io.github.mini-mo/mini-orm/0.0.2)
 
 ```xml
 <dependency>
     <groupId>io.github.mini-mo</groupId>
     <artifactId>mini-orm</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
